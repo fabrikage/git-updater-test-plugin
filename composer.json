@@ -1,0 +1,19 @@
+{
+  "name": "fabrikage/github-updater-test-plugin",
+  "description": "Just a test plugin to test functionality of the GitHub updater package to update WordPress plugins using the GitHub release REST API",
+  "type": "wordpress-plugin",
+  "autoload": {
+    "psr-4": {
+      "Fabrikage\\GitHubUpdater\\TestPlugin\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Bart Klein Reesink",
+      "email": "bart@fabrikage.nl"
+    }
+  ],
+  "require": {
+    "erusev/parsedown": "^1.7"
+  }
+}
