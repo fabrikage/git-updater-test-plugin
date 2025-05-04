@@ -1,4 +1,4 @@
-# WordPress Plugin Updater
+# Git Updater Test Plugin
 
 A WordPress plugin that demonstrates remote plugin updates using repository releases API.
 
