@@ -1,8 +1,8 @@
 <?php
 
-namespace Fabrikage\GitHubUpdater\TestPlugin;
+namespace Fabrikage\GitUpdater\TestPlugin;
 
-use Fabrikage\GitHubUpdater\TestPlugin\Client\GitHubClient;
+use Fabrikage\GitUpdater\TestPlugin\Client\GitHubClient;
 
 class Bootstrap
 {
@@ -47,7 +47,7 @@ class Bootstrap
         // Set-up the GitHub client
         $client = new GitHubClient(
             username: 'fabrikage',
-            repository: 'github-updater-test-plugin',
+            repository: 'git-updater-test-plugin',
             token: GITHUB_UPDATER_GITHUB_TOKEN
         );
 

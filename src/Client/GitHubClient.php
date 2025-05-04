@@ -1,11 +1,11 @@
 <?php
 
-namespace Fabrikage\GitHubUpdater\TestPlugin\Client;
+namespace Fabrikage\GitUpdater\TestPlugin\Client;
 
-use Fabrikage\GitHubUpdater\TestPlugin\Data\PluginInfo;
-use Fabrikage\GitHubUpdater\TestPlugin\Data\PluginUpdate;
-use Fabrikage\GitHubUpdater\TestPlugin\Data\ReleaseInfo;
-use Fabrikage\GitHubUpdater\TestPlugin\Bootstrap;
+use Fabrikage\GitUpdater\TestPlugin\Data\PluginInfo;
+use Fabrikage\GitUpdater\TestPlugin\Data\PluginUpdate;
+use Fabrikage\GitUpdater\TestPlugin\Data\ReleaseInfo;
+use Fabrikage\GitUpdater\TestPlugin\Bootstrap;
 use Parsedown;
 
 class GitHubClient implements ClientInterface
@@ -100,7 +100,7 @@ class GitHubClient implements ClientInterface
             return null;
         }
 
-        $htmlBody = $release->changelog ?? __('No changelog available.', 'github-updater-test-plugin');
+        $htmlBody = $release->changelog ?? __('No changelog available.', 'git-updater-test-plugin');
 
         return new PluginInfo(
             slug: Bootstrap::getPluginSlug(),

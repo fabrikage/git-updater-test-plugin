@@ -1,24 +1,24 @@
 <?php
 
 /**
- * Plugin Name: GitHub Updater Test Plugin
+ * Plugin Name: Git Updater Test Plugin
  * Plugin URI:  https://fabrikage.nl
- * Description: A test plugin for GitHub Updater.
+ * Description: A test plugin for Git Updater.
  * Version:     {version}
  * Author:      Fabrikage
  * Author URI:  https://fabrikage.nl
- * Text Domain: github-updater-test-plugin
+ * Text Domain: git-updater-test-plugin
  *
  */
 
-namespace Fabrikage\GitHubUpdater\TestPlugin;
+namespace Fabrikage\GitUpdater\TestPlugin;
 
-use Fabrikage\GitHubUpdater\TestPlugin\Bootstrap;
+use Fabrikage\GitUpdater\TestPlugin\Bootstrap;
 
 const GITHUB_UPDATER_TEST_PLUGIN_FILE = __FILE__;
 const GITHUB_UPDATER_TEST_PLUGIN_DIR = __DIR__;
 const GITHUB_UPDATER_TEST_PLUGIN_VERSION = '{version}';
-const GITHUB_UPDATER_TEST_PLUGIN_SLUG = 'github-updater-test-plugin';
+const GITHUB_UPDATER_TEST_PLUGIN_SLUG = 'git-updater-test-plugin';
 
 if (is_readable(__DIR__ . '/vendor/autoload.php')) {
     require_once __DIR__ . '/vendor/autoload.php';

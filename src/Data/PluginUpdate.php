@@ -1,6 +1,6 @@
 <?php
 
-namespace Fabrikage\GitHubUpdater\TestPlugin\Data;
+namespace Fabrikage\GitUpdater\TestPlugin\Data;
 
 class PluginUpdate
 {

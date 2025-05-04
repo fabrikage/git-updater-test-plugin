@@ -1,8 +1,8 @@
 <?php
 
-namespace Fabrikage\GitHubUpdater\TestPlugin;
+namespace Fabrikage\GitUpdater\TestPlugin;
 
-use Fabrikage\GitHubUpdater\TestPlugin\Client\ClientInterface;
+use Fabrikage\GitUpdater\TestPlugin\Client\ClientInterface;
 
 class UpdateChecker
 {

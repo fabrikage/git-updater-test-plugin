@@ -1,10 +1,10 @@
 <?php
 
-namespace Fabrikage\GitHubUpdater\TestPlugin\Client;
+namespace Fabrikage\GitUpdater\TestPlugin\Client;
 
-use Fabrikage\GitHubUpdater\TestPlugin\Data\PluginInfo;
-use Fabrikage\GitHubUpdater\TestPlugin\Data\PluginUpdate;
-use Fabrikage\GitHubUpdater\TestPlugin\Data\ReleaseInfo;
+use Fabrikage\GitUpdater\TestPlugin\Data\PluginInfo;
+use Fabrikage\GitUpdater\TestPlugin\Data\PluginUpdate;
+use Fabrikage\GitUpdater\TestPlugin\Data\ReleaseInfo;
 
 interface ClientInterface
 {

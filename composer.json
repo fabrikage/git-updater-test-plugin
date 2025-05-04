@@ -1,10 +1,10 @@
 {
-  "name": "fabrikage/github-updater-test-plugin",
+  "name": "fabrikage/git-updater-test-plugin",
   "description": "Just a test plugin to test functionality of the GitHub updater package to update WordPress plugins using the GitHub release REST API",
   "type": "wordpress-plugin",
   "autoload": {
     "psr-4": {
-      "Fabrikage\\GitHubUpdater\\TestPlugin\\": "src/"
+      "Fabrikage\\GitUpdater\\TestPlugin\\": "src/"
     }
   },
   "authors": [
