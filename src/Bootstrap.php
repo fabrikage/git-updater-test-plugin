@@ -36,9 +36,9 @@ class Bootstrap
         register_activation_hook(GITHUB_UPDATER_TEST_PLUGIN_FILE, [$this, 'activate']);
         register_deactivation_hook(GITHUB_UPDATER_TEST_PLUGIN_FILE, [$this, 'deactivate']);
 
-        if (!defined('GITHUB_UPDATER_GITHUB_TOKEN')) {
+        if (!defined('GIT_UPDATER_GITHUB_TOKEN')) {
             add_action('admin_notices', function () {
-                echo '<div class="notice notice-error"><p>GitHub token is not defined. Please set the GITHUB_UPDATER_GITHUB_TOKEN (with access to the repository) in your wp-config.php file.</p></div>';
+                echo '<div class="notice notice-error"><p>GitHub token is not defined. Please set the GIT_UPDATER_GITHUB_TOKEN (with access to the repository) in your wp-config.php file.</p></div>';
             });
 
             return;
@@ -48,7 +48,7 @@ class Bootstrap
         $client = new GitHubClient(
             username: 'fabrikage',
             repository: 'git-updater-test-plugin',
-            token: GITHUB_UPDATER_GITHUB_TOKEN
+            token: GIT_UPDATER_GITHUB_TOKEN
         );
 
         // Initialize the update checker
