@@ -2,7 +2,9 @@
 
 namespace Fabrikage\GitHubUpdater\TestPlugin;
 
-class Plugin
+use Fabrikage\GitHubUpdater\TestPlugin\Client\GitHubClient;
+
+class Bootstrap
 {
     public static function getPluginDir(): string
     {
@@ -34,20 +36,23 @@ class Plugin
         register_activation_hook(GITHUB_UPDATER_TEST_PLUGIN_FILE, [$this, 'activate']);
         register_deactivation_hook(GITHUB_UPDATER_TEST_PLUGIN_FILE, [$this, 'deactivate']);
 
-        $updateChecker = new UpdateChecker();
+        if (!defined('GITHUB_UPDATER_GITHUB_TOKEN')) {
+            add_action('admin_notices', function () {
+                echo '<div class="notice notice-error"><p>GitHub token is not defined. Please set the GITHUB_UPDATER_GITHUB_TOKEN (with access to the repository) in your wp-config.php file.</p></div>';
+            });
 
-        add_filter('pre_set_site_transient_update_plugins', [$updateChecker, 'checkForUpdates']);
-        add_filter('http_request_args', [$updateChecker, 'addAuthorizationHeader'], 10, 2);
-        add_filter('plugins_api', [$updateChecker, 'addPluginInfo'], 10, 3);
+            return;
+        }
 
-        add_action('admin_init', function () {
-            if (isset($_GET['force-plugin-update'])) {
-                delete_site_transient('update_plugins');
-                wp_update_plugins();
-                echo 'Plugin update check triggered.';
-                exit;
-            }
-        });
+        // Set-up the GitHub client
+        $client = new GitHubClient(
+            username: 'fabrikage',
+            repository: 'github-updater-test-plugin',
+            token: GITHUB_UPDATER_GITHUB_TOKEN
+        );
+
+        // Initialize the update checker
+        UpdateChecker::init($client);
     }
 
     public function activate(): void

@@ -2,18 +2,31 @@
 
 namespace Fabrikage\GitHubUpdater\TestPlugin;
 
+use Fabrikage\GitHubUpdater\TestPlugin\Client\ClientInterface;
+
 class UpdateChecker
 {
-    private string $githubUsername = 'fabrikage';
-    private string $githubRepository = 'github-updater-test-plugin';
-
-    private function githubSlug(): string
+    public function __construct(private ClientInterface $client)
     {
-        return sprintf(
-            '%s/%s',
-            $this->githubUsername,
-            $this->githubRepository
-        );
+        add_filter('pre_set_site_transient_update_plugins', [$this, 'checkForUpdates']);
+        add_filter('plugins_api', [$this, 'addPluginInfo'], 10, 3);
+        add_filter('http_request_args', [$this, 'addAuthorizationHeader'], 10, 2);
+        add_action('admin_init', [$this, 'forceUpdateCheck'], 10);
+    }
+
+    public function forceUpdateCheck(): void
+    {
+        if (isset($_GET['force-plugin-update'])) {
+            delete_site_transient('update_plugins');
+            wp_update_plugins();
+            wp_redirect(admin_url('plugins.php'));
+            exit;
+        }
+    }
+
+    public static function init(ClientInterface $client): static
+    {
+        return new static($client);
     }
 
     public function checkForUpdates($transient)
@@ -22,109 +35,43 @@ class UpdateChecker
             return $transient;
         }
 
-        $currentVersion = Plugin::getPluginVersion();
-        $apiUrl = sprintf('https://api.github.com/repos/%s/releases/latest', $this->githubSlug());
+        $update = $this->client->getPluginUpdate();
 
-        $args = [
-            'headers' => [
-                'Accept' => 'application/vnd.github+json',
-                'User-Agent' => 'WordPress/' . get_bloginfo('version') . '; ' . home_url(),
-            ],
-        ];
-
-        $response = wp_remote_get($apiUrl, $args);
-
-        if (is_wp_error($response)) {
+        if (!$update) {
             return $transient;
         }
 
-        $release = json_decode(wp_remote_retrieve_body($response));
-        if (!$release || empty($release->tag_name) || empty($release->assets)) {
-            return $transient;
-        }
-
-        // Search for your desired asset (e.g. named plugin zip)
-        $assetUrl = null;
-        foreach ($release->assets as $asset) {
-            if (str_contains($asset->name, Plugin::getPluginSlug())) {
-                $assetUrl = $asset->browser_download_url;
-                break;
-            }
-        }
-
-        if (!$assetUrl) {
-            return $transient; // No matching asset found
-        }
-
-        if (version_compare($currentVersion, ltrim($release->tag_name, 'v'), '<')) {
-            $plugin = new \stdClass();
-            $plugin->slug = Plugin::getPluginSlug();
-            $plugin->plugin = Plugin::getPluginSlug();
-            $plugin->new_version = ltrim($release->tag_name, 'v');
-            $plugin->package = $assetUrl; // Auth is needed here too
-            $plugin->url = $release->html_url;
-            $transient->response[basename(Plugin::getPluginDir()) . '/' . basename(Plugin::getPluginFile())] = $plugin;
-        }
+        $transient->response[$update->pluginFile] = (object) $update->toArray();
 
         return $transient;
     }
 
     public function addAuthorizationHeader($args, $url)
     {
-        if (strpos($url, $this->githubSlug()) !== false) {
-            $github_token = defined('GITHUB_TOKEN') ? GITHUB_TOKEN : null;
-
-            if ($github_token) {
-                $args['headers']['Authorization'] = 'Bearer ' . $github_token;
-                $args['headers']['User-Agent'] = 'WordPress/' . get_bloginfo('version') . '; ' . home_url();
-            }
-        }
-
-        return $args;
+        return $this->client->addAuthorizationHeader($args, $url);
     }
 
     public function addPluginInfo($result, $action, $args)
     {
+        // Check if the action is 'plugin_information'
         if ($action !== 'plugin_information') {
             return $result;
         }
 
-        if ($args->slug !== Plugin::getPluginSlug()) {
+        // Check if the slug matches the plugin slug
+        if (isset($args->slug) && $args->slug !== Bootstrap::getPluginSlug()) {
             return $result;
         }
 
-        // Fetch the plugin info from GitHub
-        $apiUrl = sprintf('https://api.github.com/repos/%s/releases/latest', $this->githubSlug());
+        // Fetch the plugin info from the API client
+        $pluginInfo = $this->client->getPluginInfo();
 
-        $response = wp_remote_get($apiUrl, [
-            'headers' => [
-                'Accept' => 'application/vnd.github+json',
-                'User-Agent' => 'WordPress/' . get_bloginfo('version') . '; ' . home_url(),
-            ],
-        ]);
-
-        if (is_wp_error($response)) {
+        // If the plugin info is not found, return the original result
+        if (!$pluginInfo) {
             return $result;
         }
 
-        $repo = json_decode(wp_remote_retrieve_body($response));
-
-        // Convert markdown $repo->body to HTML
-        if (isset($repo->body)) {
-            $markdown = new \Parsedown();
-            $repo->body = $markdown->text($repo->body);
-        }
-
-        // Build the plugin info response
-        $plugin_info = new \stdClass();
-        $plugin_info->name = Plugin::getPluginSlug();
-        $plugin_info->slug = Plugin::getPluginSlug();
-        $plugin_info->homepage = $repo->html_url;
-        $plugin_info->version = ltrim($repo->tag_name, 'v');
-        $plugin_info->sections = [
-            'changelog' => $repo->body,
-        ];
-
-        return $plugin_info;
+        // Convert the plugin info to an array and add the download URL
+        return (object) $pluginInfo->toArray(['download_url' => $this->client->getPluginUpdate()->packageUrl]);
     }
 }

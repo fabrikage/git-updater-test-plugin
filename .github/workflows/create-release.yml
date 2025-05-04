@@ -1,13 +1,13 @@
 on:
-  workflow_dispatch: # Allow manual triggering the workflow
+  workflow_dispatch:
   push:
     tags:
-      - '*.*' # When a tag is pushed, e.g. 1.0.0 or 1.0.0-beta
+      - '*.*'
 
 name: Create release
 
 env:
-  PLUGIN_NAME: 'github-updater-test-plugin' # Set the plugin name
+  PLUGIN_NAME: 'github-updater-test-plugin'
 
 jobs:
   release:
@@ -15,16 +15,18 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Checkout
-        uses: 'actions/checkout@v3'
+        uses: actions/checkout@v3
+
       - name: Fetch full Git history
         run: git fetch --prune --unshallow
+
       - name: Generate dynamic Changelog for release body
         run: |
           echo "# Changelog" > /tmp/CHANGELOG.md
           echo "" >> /tmp/CHANGELOG.md
-
           TAGS=$(git for-each-ref --sort=creatordate --format '%(refname:short)' refs/tags)
           PREV_TAG=""
           for TAG in $TAGS; do
@@ -38,37 +40,43 @@ jobs:
             echo "" >> /tmp/CHANGELOG.md
             PREV_TAG=$TAG
           done
+
       - name: Setup PHP
-        uses: 'shivammathur/setup-php@v2'
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2' # Set the PHP version to use
+          php-version: '8.2'
+
       - name: Find and replace {version} in main plugin file
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           include: '${{ env.PLUGIN_NAME }}.php'
           find: '{version}'
           replace: '${{ github.ref_name }}'
+
       - name: Install Composer dependencies
-        uses: 'ramsey/composer-install@v2'
+        uses: ramsey/composer-install@v2
         env:
           COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.COMPOSER_AUTH }}"}}'
         with:
           composer-options: '--no-dev --no-interaction --no-progress --optimize-autoloader --classmap-authoritative'
-      - name: List files
-        run: 'ls -la'
+
       - name: Cleanup
         run: |
           rm -rf .git .github .gitignore composer.* package.json package-lock.json TODO.md node_modules assets/scss Makefile .prettierrc
-      - name: List files
-        run: 'ls -la'
-      - name: Put all files in a directory, ignore errors
-        run: 'mkdir ${{ env.PLUGIN_NAME }} && mv * ${{ env.PLUGIN_NAME }} || true'
-      - name: List files
-        run: 'ls -la'
-      - name: Zip release
-        run: 'zip -r ${{ env.PLUGIN_NAME }}-${{github.ref_name}}.zip *'
+
+      - name: Copy plugin files to folder for manual ZIP
+        run: |
+          mkdir ${{ env.PLUGIN_NAME }}
+          shopt -s extglob
+          cp -r !(github-updater-test-plugin) ${{ env.PLUGIN_NAME }}
+
+      - name: Create manual ZIP
+        run: zip -r ${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip ${{ env.PLUGIN_NAME }}
+
       - name: Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: '${{ env.PLUGIN_NAME }}-${{github.ref_name}}.zip'
-          bodyFile: '/tmp/CHANGELOG.md'
+          artifacts: |
+            ${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip
+            ${{ env.PLUGIN_NAME }}-update-${{ github.ref_name }}.zip
+          bodyFile: /tmp/CHANGELOG.md
