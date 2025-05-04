@@ -7,7 +7,7 @@ on:
 name: Create release
 
 env:
-  PLUGIN_NAME: 'git-updater-test-plugin'
+  PLUGIN_NAME: ${{ github.event.repository.name }}
 
 jobs:
   release:
